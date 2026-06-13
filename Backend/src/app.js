@@ -1,18 +1,21 @@
 import cookieParser from "cookie-parser"
 import express from "express"
 import morgan from "morgan"
+import cors from "cors"
 import authrouter from "./routes/auth.routes.js"
 
 const app=express()
 
-// Middleware: Parse incoming JSON requests
+
+
 app.use(express.json())
-
-// Middleware: Log HTTP requests in development
 app.use(morgan("dev"))
-
-// Middleware: Parse cookies from requests
 app.use(cookieParser())
+app.use(cors({
+    origin:"http://localhost:5173",
+    methods:["GET","POST","PUT","DELETE"],
+    credentials:true
+}))
 
 // Routes: Authentication endpoints
 app.use("/api/auth",authrouter)

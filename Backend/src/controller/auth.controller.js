@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model.js";
 import {config} from "../config/config.js"
-// TODO: Import bcryptjs for password hashing - npm install bcryptjs
-// import bcrypt from "bcryptjs";
 
 // Helper: Generate JWT token and send response
 async function sendTokenResponse(user,res,message)
@@ -31,7 +29,7 @@ async function sendTokenResponse(user,res,message)
 // Controller: Handle user registration
 export async function RegisterController(req,res) {
 
-    const {email,password,fullname,contact,isSeller}=req.body
+    const {email,password,fullname,contact,role}=req.body
 
     try{
         // Check if user already exists with same email or contact
@@ -49,13 +47,13 @@ export async function RegisterController(req,res) {
             })
         }
 
-        
+        // Create user with plain password (will be hashed by pre-save hook)
         const user=await UserModel.create({
             email,
             fullname,
-            password,
+            password, // Password will be hashed by Mongoose pre-save hook
             contact,
-            role: isSeller ? "seller":"buyer"  // Default role is buyer if not provided
+            role: role || "buyer"  // Use role from request or default to buyer
         })
 
         await sendTokenResponse(user,res,"User Registered Successfully")
@@ -71,3 +69,41 @@ export async function RegisterController(req,res) {
     }
 }
 
+// Controller: Handle user login
+export async function LoginController(req,res) {
+
+    const {email,password}=req.body
+
+    try{
+        // Find user by email
+        const user=await UserModel.findOne({email})
+
+        if(!user)
+        {
+            return res.status(400).json({
+                message:"User not found"
+            })
+        }
+
+        // Use bcrypt to compare passwords via method on user schema
+        const isMatch=await user.comparePassword(password)
+
+        if(!isMatch)
+        {
+            return res.status(400).json({
+                message:"Invalid email or Password"
+            })
+        }
+
+        await sendTokenResponse(user,res,"User Logged In Successfully")
+
+    }
+    catch(error)
+    {
+        console.log(error)
+        return res.status(500).json({
+            message:"Server error"
+        })
+    }
+}
+    
