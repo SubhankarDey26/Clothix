@@ -1,20 +1,40 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model.js";
-import config from "../config/config.js"
+import {config} from "../config/config.js"
+// TODO: Import bcryptjs for password hashing - npm install bcryptjs
+// import bcrypt from "bcryptjs";
 
-
-async function sendTokenResponse(user,res)
+// Helper: Generate JWT token and send response
+async function sendTokenResponse(user,res,message)
 {
     const token=jwt.sign({
         id:user._id
-    },config.JWT_SECRET,{expiresIn:"1d"})
+    },config.JWT_SECRET,
+    {expiresIn:"7d"})
+
+    // TODO: Set secure and httpOnly flags for production
+    res.cookie("token",token)
+
+    res.status(200).json({
+        message,
+        success:true,
+        user:{
+            id:user._id,
+            email:user.email,
+            contact:user.contact,
+            fullname:user.fullname,
+            role:user.role
+        }
+    })
 }
 
-async function RegisterController(req,res) {
+// Controller: Handle user registration
+export async function RegisterController(req,res) {
 
-    const {email,password,fullname,contact,role}=req.body
+    const {email,password,fullname,contact,isSeller}=req.body
 
     try{
+        // Check if user already exists with same email or contact
         const isUserExist= await UserModel.findOne({
             $or:[
                 {email},
@@ -25,14 +45,20 @@ async function RegisterController(req,res) {
         if(isUserExist)
         {
             return res.status(400).json({
-                message:"user Already Exist"
+                message:"User Already Exist"
             })
         }
 
+        
         const user=await UserModel.create({
-            email,fullname,password,contact
+            email,
+            fullname,
+            password,
+            contact,
+            role: isSeller ? "seller":"buyer"  // Default role is buyer if not provided
         })
 
+        await sendTokenResponse(user,res,"User Registered Successfully")
 
 
     }
@@ -43,6 +69,5 @@ async function RegisterController(req,res) {
             message:"Server error"
         })
     }
-
-
 }
+
