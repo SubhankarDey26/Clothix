@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hook/useAuth.js';
 import { useNavigate } from 'react-router';
+import ContinueWithGoogle from '../components/ContinueWithGoogle';
 
 const Login = () => {
 
@@ -93,6 +94,8 @@ const Login = () => {
             Sign In
           </button>
         </form>
+
+        <ContinueWithGoogle />
 
         <p className="text-center text-sm text-neutral-500 mt-10">
           Don't have an account? <a href="/register" className="text-yellow-500 font-medium hover:text-yellow-400 transition ml-1">Create one</a>

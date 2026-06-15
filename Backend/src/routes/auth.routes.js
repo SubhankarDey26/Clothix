@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validateRegisterUser, validateLoginUser, handleValidationErrors } from "../validator/auth.validator.js";
 import {RegisterController, LoginController, googleCallback} from "../controller/auth.controller.js"
 import passport from "passport";
+import { config } from "../config/config.js";
 
 const authrouter=Router()
 
@@ -20,7 +21,7 @@ authrouter.get('/google',
 
 // Callback route that Google will redirect to after authentication
 authrouter.get('/google/callback',
-  passport.authenticate('google', { session: false }),
+  passport.authenticate('google', { session: false, failureRedirect: config.NODE_ENV=="development" ? "http://localhost:5173/login" : "/login" }),
   googleCallback
 );
 

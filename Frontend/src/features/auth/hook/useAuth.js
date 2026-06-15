@@ -17,7 +17,12 @@ export const useAuth=()=>{
             dispatch(setLoading(false))
             return data
         } catch(error){
-            dispatch(setError(error.response?.data?.message || error.message))
+            // Extract error message from validation errors array or response message
+            const errorMsg = Array.isArray(error.response?.data?.errors) 
+                ? error.response.data.errors.map(e => e.msg).join(", ")
+                : error.response?.data?.message || error.message
+            console.error("Register error details:", error.response?.data) // Debug logging
+            dispatch(setError(errorMsg))
             dispatch(setLoading(false))
             throw error
         }
