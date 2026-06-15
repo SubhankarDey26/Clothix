@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import {useAuth} from "../hook/useAuth.js"
 import { useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 import ContinueWithGoogle from '../components/ContinueWithGoogle';
 
 const Register = () => {
 
 const {handleRegister}=useAuth()
 const navigate=useNavigate()
+const user=useSelector((state)=>state.auth.user)
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -28,15 +30,24 @@ const navigate=useNavigate()
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    // Pass form data with correct parameter names (fullname not fullName)
-    await handleRegister({
-        email:formData.email,
-        contact:formData.contactNumber,
-        fullname:formData.fullName, // Convert fullName to fullname for backend
-        password:formData.password,
-        isSeller:formData.isSeller
-    })
-    navigate("/home")
+    try{
+      // Pass form data with correct parameter names (fullname not fullName)
+      await handleRegister({
+          email:formData.email,
+          contact:formData.contactNumber,
+          fullname:formData.fullName, // Convert fullName to fullname for backend
+          password:formData.password,
+          isSeller:formData.isSeller
+      })
+      // Navigate based on user role after successful registration
+      if(user?.role === 'seller'){
+        navigate("/seller")
+      } else {
+        navigate("/home")
+      }
+    } catch(error){
+      console.error('Registration failed:', error)
+    }
   };
 
   return (

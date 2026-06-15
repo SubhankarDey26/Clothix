@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hook/useAuth.js';
 import { useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 import ContinueWithGoogle from '../components/ContinueWithGoogle';
 
 const Login = () => {
 
   const navigate=useNavigate()
+  const user=useSelector((state)=>state.auth.user)
 
   const {handleLogin} = useAuth();
   const [formData, setFormData] = useState({
@@ -31,12 +33,15 @@ const Login = () => {
         email: formData.email,
         password: formData.password
       });
-      navigate("/home")
-      // TODO: Redirect to dashboard after successful login
+      // Navigate based on user role after successful login
+      if(user?.role === 'seller'){
+        navigate("/seller")
+      } else {
+        navigate("/home")
+      }
     } catch (error) {
       console.error('Login failed:', error);
     }
-    
   };
 
   return (
