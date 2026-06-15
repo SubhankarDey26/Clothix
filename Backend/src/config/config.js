@@ -27,12 +27,18 @@ if(!process.env.IMAGEKIT_PRIVATE_KEY)
     throw new Error("Imagekit private key is not defined in Enviroment variables")
 }
 
+if(!process.env.IMAGEKIT_PUBLIC_KEY)
+{
+    throw new Error("Imagekit public key is not defined in Enviroment variables")
+}
+
 export const config={
     MONGO_URI:process.env.MONGO_URI,
     JWT_SECRET:process.env.JWT_SECRET,
     GOOGLE_CLIENT_ID:process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET:process.env.GOOGLE_CLIENT_SECRET,
     NODE_ENV:process.env.NODE_ENV || "development",
-    IMAGEKIT_PRIVATE_KEY:process.env.IMAGEKIT_PRIVATE_KEY
+    IMAGEKIT_PRIVATE_KEY:process.env.IMAGEKIT_PRIVATE_KEY,
+    IMAGEKIT_PUBLIC_KEY:process.env.IMAGEKIT_PUBLIC_KEY
 }
 
