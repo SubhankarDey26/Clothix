@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRegisterUser, validateLoginUser, handleValidationErrors } from "../validator/auth.validator.js";
-import {RegisterController, LoginController, googleCallback, getMe} from "../controller/auth.controller.js"
+import {RegisterController, LoginController, googleCallback, getMe, LogoutController} from "../controller/auth.controller.js"
 import passport from "passport";
 import { config } from "../config/config.js";
 import { authenticateUser } from "../middleware/auth.middleware.js";
@@ -29,5 +29,7 @@ authrouter.get('/google/callback',
 
 
 authrouter.get("/me",authenticateUser,getMe)
+
+authrouter.post("/logout",LogoutController)
 
 export default authrouter

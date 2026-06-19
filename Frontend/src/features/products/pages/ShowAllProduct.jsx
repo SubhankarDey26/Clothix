@@ -1,7 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useProduct } from '../hook/useProduct.js';
+import { useAuth } from '../../auth/hook/useAuth.js';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { ShoppingBag, ImageOff, Search, SlidersHorizontal, X, Menu, ArrowUp } from 'lucide-react';
+import { ShoppingBag, ImageOff, Search, SlidersHorizontal, X, Menu, ArrowUp, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
 
@@ -36,9 +39,10 @@ const ProductCard = ({ product, index }) => {
   const thumbnail = product.image?.[0]?.url;
 
   return (
-    <div
+    <Link
+      to={`/product/${product._id}`}
       ref={ref}
-      className={`group relative bg-neutral-900/60 rounded-2xl border border-neutral-800/40 overflow-hidden transition-all duration-500 hover:border-yellow-500/30 hover:shadow-[0_0_30px_rgba(234,179,8,0.08)] ${isInView ? 'animate-fade-in-up' : 'opacity-0'}`}
+      className={`group relative bg-neutral-900/60 rounded-2xl border border-neutral-800/40 overflow-hidden transition-all duration-500 hover:border-yellow-500/30 hover:shadow-[0_0_30px_rgba(234,179,8,0.08)] block ${isInView ? 'animate-fade-in-up' : 'opacity-0'}`}
       style={{ animationDelay: `${index * 0.06}s` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -67,11 +71,11 @@ const ProductCard = ({ product, index }) => {
           </span>
         )}
 
-        {/* Quick view button on hover */}
+        {/* View details on hover */}
         <div className={`absolute bottom-4 left-4 right-4 transition-all duration-400 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <button className="w-full py-3 bg-yellow-500 text-neutral-950 font-bold text-sm rounded-xl hover:bg-yellow-400 transition active:scale-[0.97]">
-            Quick View
-          </button>
+          <span className="w-full py-3 bg-yellow-500 text-neutral-950 font-bold text-sm rounded-xl flex items-center justify-center">
+            View Details
+          </span>
         </div>
       </div>
 
@@ -101,7 +105,7 @@ const ProductCard = ({ product, index }) => {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -109,6 +113,8 @@ const ProductCard = ({ product, index }) => {
 /* ─── Main Page Component ─── */
 const ShowAllProduct = () => {
   const { products, loading, error, handleGetAllProduct } = useProduct();
+  const { handleLogout } = useAuth();
+  const { user } = useSelector((state) => state.auth);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
@@ -169,20 +175,38 @@ const ShowAllProduct = () => {
             <span className="text-xl font-extrabold text-yellow-500 tracking-widest uppercase">CLOTHIX</span>
           </Link>
 
-          {/* Desktop Nav Links */}
+          {/* Desktop Nav Links
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
             <Link to="/" className="hover:text-yellow-500 transition">Home</Link>
             <Link to="/buyer" className="text-yellow-500">Shop</Link>
-          </div>
+            {user?.role === 'seller' && (
+              <Link to="/seller" className="hover:text-yellow-500 transition">Seller Dashboard</Link>
+            )}
+          </div> */}
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login" className="px-5 py-2 text-neutral-300 font-medium hover:text-yellow-400 transition">
-              Login
-            </Link>
-            <Link to="/register" className="px-5 py-2.5 bg-yellow-500 text-neutral-950 font-semibold rounded-full hover:bg-yellow-400 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all">
-              Sign Up
-            </Link>
+            {user ? (
+              <>
+                <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 border border-neutral-800 text-neutral-300 font-medium rounded-full hover:border-red-500/50 hover:text-red-400 transition-all"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="px-5 py-2 text-neutral-300 font-medium hover:text-yellow-400 transition">
+                  Login
+                </Link>
+                <Link to="/register" className="px-5 py-2.5 bg-yellow-500 text-neutral-950 font-semibold rounded-full hover:bg-yellow-400 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all">
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -197,9 +221,27 @@ const ShowAllProduct = () => {
             <div className="px-6 py-6 space-y-4">
               <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Home</Link>
               <Link to="/buyer" onClick={() => setMobileMenuOpen(false)} className="block text-yellow-500 font-medium">Shop</Link>
+              {user?.role === 'seller' && (
+                <Link to="/seller" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Seller Dashboard</Link>
+              )}
               <hr className="border-neutral-800" />
-              <Link to="/login" className="block text-neutral-300 font-medium hover:text-yellow-400 transition">Login</Link>
-              <Link to="/register" className="block text-center py-3 bg-yellow-500 text-neutral-950 font-bold rounded-full hover:bg-yellow-400 transition">Sign Up</Link>
+              {user ? (
+                <>
+                  <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-neutral-800 border border-neutral-700 text-red-400 font-bold rounded-full hover:bg-neutral-700 transition"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="block text-neutral-300 font-medium hover:text-yellow-400 transition">Login</Link>
+                  <Link to="/register" className="block text-center py-3 bg-yellow-500 text-neutral-950 font-bold rounded-full hover:bg-yellow-400 transition">Sign Up</Link>
+                </>
+              )}
             </div>
           </div>
         )}

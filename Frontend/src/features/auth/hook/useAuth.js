@@ -1,5 +1,5 @@
 import {setError,setLoading,setUsers,setAuthChecked} from "../state/auth.slice.js"
-import { register, login, getMe } from "../service/auth.api.js"
+import { register, login, getMe, logout } from "../service/auth.api.js"
 import { useDispatch } from "react-redux"
 
 export const useAuth=()=>{
@@ -58,6 +58,7 @@ export const useAuth=()=>{
         }
         catch(err){
             // Not logged in or token expired — this is expected, not an error
+            console.log(err)
             dispatch(setUsers(null))
         }
         finally{
@@ -66,5 +67,17 @@ export const useAuth=()=>{
         }
     }
 
-    return {handleRegister, handleLogin, HandleGetMe}
+    // Handle user logout
+    async function handleLogout() {
+        try {
+            await logout()
+            dispatch(setUsers(null))
+        } catch(error) {
+            // Even if the API call fails, clear the user locally
+            console.log(error)
+            dispatch(setUsers(null))
+        }
+    }
+
+    return {handleRegister, handleLogin, HandleGetMe, handleLogout}
 }

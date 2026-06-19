@@ -9,6 +9,7 @@ import {
   createProduct,
   getSellerProduct,
   getallproducts,
+  getproductById,
 } from "../services/product.api.js";
 
 export const useProduct = () => {
@@ -77,6 +78,11 @@ export const useProduct = () => {
     }
   };
 
+  const handleProductDetailsById=async(productId)=>{
+    const data=await getproductById(productId)
+    return data.product
+  }
+
   return {
     sellerProduct,
     products,
@@ -85,5 +91,6 @@ export const useProduct = () => {
     handleCreateProduct,
     handleGetSellerProducts,
     handleGetAllProduct,
+    handleProductDetailsById
   };
 };

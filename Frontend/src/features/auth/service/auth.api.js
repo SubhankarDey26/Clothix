@@ -32,3 +32,9 @@ export async function getMe() {
     const response =await authApiInstance("/me")
     return response.data
 }
+
+// Logout user
+export async function logout() {
+    const response = await authApiInstance.post("/logout")
+    return response.data
+}

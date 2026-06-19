@@ -151,3 +151,11 @@ export const getMe=async(req,res)=>{
         }
     })
 }
+
+export const LogoutController=async(req,res)=>{
+    res.clearCookie("token")
+    res.status(200).json({
+        message:"Logged out successfully",
+        success:true
+    })
+}
