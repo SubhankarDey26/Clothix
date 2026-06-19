@@ -6,7 +6,13 @@ export const validateRegisterUser=[
         .isEmail().withMessage("Invalid email Format"),
     body("contact")
         .notEmpty().withMessage("Contact is required")
-        .isLength({min:10, max:15}).withMessage("Contact must be 10-15 digits"),
+        .custom((value) => {
+            const digits = value.replace(/\D/g, '');
+            if(digits.length < 10 || digits.length > 15) {
+                throw new Error('Contact must contain 10-15 digits');
+            }
+            return true;
+        }),
     body("password")
         .notEmpty().withMessage("Password is required")
         .isLength({min:6}).withMessage("Password must be at least 6 characters long"),

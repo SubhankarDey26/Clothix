@@ -12,6 +12,12 @@ const app=express()
 
 
 
+app.use(cors({
+    origin:"http://localhost:5173",
+    methods:["GET","POST","PUT","DELETE"],
+    credentials:true
+}))
+
 app.use(express.json())
 app.use(morgan("dev"))
 app.use(cookieParser())
@@ -33,14 +39,6 @@ passport.use(new GoogleStrategy({
 // Routes: Authentication endpoints
 app.use("/api/auth",authrouter)
 app.use("/api/products",productRouter)
-
-
-
-// app.use(cors({
-//     origin:"http://localhost:5173",
-//     methods:["GET","POST","PUT","DELETE"],
-//     credentials:true
-// }))
 
 
 export default app
