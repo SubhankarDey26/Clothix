@@ -1,5 +1,5 @@
-import {setError,setLoading,setUsers} from "../state/auth.slice.js"
-import { register, login } from "../service/auth.api.js"
+import {setError,setLoading,setUsers,setAuthChecked} from "../state/auth.slice.js"
+import { register, login, getMe } from "../service/auth.api.js"
 import { useDispatch } from "react-redux"
 
 export const useAuth=()=>{
@@ -50,5 +50,21 @@ export const useAuth=()=>{
         }
     }
 
-    return {handleRegister, handleLogin}
+    // Check if user is already logged in via cookie (called once on app mount)
+    async function HandleGetMe() {
+        try{
+            const data=await getMe()
+            dispatch(setUsers(data.user))
+        }
+        catch(err){
+            // Not logged in or token expired — this is expected, not an error
+            dispatch(setUsers(null))
+        }
+        finally{
+            // Mark auth check as complete regardless of outcome
+            dispatch(setAuthChecked(true))
+        }
+    }
+
+    return {handleRegister, handleLogin, HandleGetMe}
 }

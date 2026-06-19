@@ -3,6 +3,39 @@ import {config} from "../config/config.js"
 import UserModel from "../models/user.model.js"
 
 
+
+export const  authenticateUser=async(req,res,next)=>{
+    const token=req.cookies.token
+
+    if(!token)
+    {
+        return res.status(401).json({
+            message:"Token Not Present"
+        })
+    }
+
+    try{
+        const decoded=jwt.verify(token,config.JWT_SECRET)
+        const user=await UserModel.findById(decoded.id)
+
+        if(!user)
+        {
+            return res.status(401).json({
+                message:"User Unauthotorized"
+            })
+        }
+        req.user=user
+        next()
+    }
+    catch(err)
+    {
+        console.log(err)
+        return res.status(401).json({
+            message:"Unauthorized"
+        })
+    }
+}
+
 export const authenticateSeller=async(req,res,next)=>{
 
     const token=req.cookies.token
@@ -10,7 +43,7 @@ export const authenticateSeller=async(req,res,next)=>{
     if(!token)
     {
         return res.status(401).json({
-            message:"Unauthorized1"
+            message:"Token Not present"
         })
     }
     try{
@@ -20,7 +53,7 @@ export const authenticateSeller=async(req,res,next)=>{
         if(!user)
         {
             return res.status(401).json({
-                message:"Unauthorized2"
+                message:"User Unauthotorized"
             })
         }
         if(user.role!=="seller")

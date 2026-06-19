@@ -26,3 +26,9 @@ export async function login(email,password) {
     })
     return response.data
 }
+
+// getMe User 
+export async function getMe() {
+    const response =await authApiInstance("/me")
+    return response.data
+}
