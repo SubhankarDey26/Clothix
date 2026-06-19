@@ -4,6 +4,7 @@ import Login from "../features/auth/pages/Login"
 import Landing from "../features/home/pages/Landing"
 import SellerDashboard from "../features/products/pages/SellerDashboard"
 import ProtectedRoute from "./ProtectedRoute"
+import ShowAllProduct from "../features/products/pages/ShowAllProduct"
 
 export const routes=createBrowserRouter([
     {
@@ -19,8 +20,8 @@ export const routes=createBrowserRouter([
         element:<Login/>
     },
     {
-        path:"/home",
-        element:<h1>This is Home Page</h1>
+        path:"/buyer",
+        element:<ShowAllProduct/>
     },
     {
         path:"/seller",

@@ -78,7 +78,7 @@ const Login = () => {
         if (data.user?.role === 'seller') {
           navigate('/seller');
         } else {
-          navigate('/home');
+          navigate('/buyer');
         }
       }, 1500);
     } catch (error) {

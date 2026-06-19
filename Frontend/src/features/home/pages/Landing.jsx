@@ -127,7 +127,7 @@ const Landing = () => {
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
-            <a href="#products" className="hover:text-yellow-500 transition">Shop</a>
+            <Link to="/buyer" className="hover:text-yellow-500 transition">Shop</Link>
             <a href="#categories" className="hover:text-yellow-500 transition">Categories</a>
             <a href="#testimonials" className="hover:text-yellow-500 transition">Reviews</a>
           </div>
@@ -152,7 +152,7 @@ const Landing = () => {
         {mobileMenuOpen && (
           <div className="md:hidden bg-neutral-900/95 backdrop-blur-xl border-t border-neutral-800/50 animate-fade-in">
             <div className="px-6 py-6 space-y-4">
-              <a href="#products" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Shop</a>
+              <Link to="/buyer" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Shop</Link>
               <a href="#categories" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Categories</a>
               <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Reviews</a>
               <hr className="border-neutral-800" />
@@ -191,9 +191,9 @@ const Landing = () => {
               <Link to="/register" className="px-8 py-4 bg-yellow-500 text-neutral-950 font-bold text-lg rounded-full flex items-center justify-center gap-2 hover:bg-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.4)] transition-all transform hover:-translate-y-1 animate-pulse-glow">
                 Start Shopping <ArrowRight size={20} />
               </Link>
-              <a href="#products" className="px-8 py-4 bg-transparent border border-neutral-700 text-neutral-200 font-bold text-lg rounded-full flex items-center justify-center hover:border-yellow-500 hover:text-yellow-500 transition-all">
+              <Link to="/buyer" className="px-8 py-4 bg-transparent border border-neutral-700 text-neutral-200 font-bold text-lg rounded-full flex items-center justify-center hover:border-yellow-500 hover:text-yellow-500 transition-all">
                 Explore Collection
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -252,9 +252,9 @@ const Landing = () => {
               <p className="text-yellow-500 text-sm font-bold uppercase tracking-widest mb-3">Curated</p>
               <h2 className="text-3xl md:text-5xl font-extrabold text-white">Trending Now</h2>
             </div>
-            <a href="#" className="flex items-center gap-1 text-yellow-500 font-medium hover:gap-3 transition-all">
+            <Link to="/buyer" className="flex items-center gap-1 text-yellow-500 font-medium hover:gap-3 transition-all">
               View All <ChevronRight size={18} />
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
