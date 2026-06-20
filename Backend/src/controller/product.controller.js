@@ -252,3 +252,27 @@ export async function addProductVariant(req, res) {
         res.status(500).json({ message: "Failed to add variant", success: false, error: error.message });
     }
 }
+
+export async function deleteProduct(req, res) {
+    try {
+        const { id } = req.params;
+        const sellerId = req.user._id;
+
+        const product = await ProductModel.findOneAndDelete({ _id: id, seller: sellerId });
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found or you are not authorized to delete it",
+                success: false
+            });
+        }
+
+        res.status(200).json({
+            message: "Product deleted successfully",
+            success: true
+        });
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        res.status(500).json({ message: "Failed to delete product", success: false, error: error.message });
+    }
+}

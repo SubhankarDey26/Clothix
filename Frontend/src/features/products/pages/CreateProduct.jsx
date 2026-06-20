@@ -189,7 +189,6 @@ const CreateProduct = ({ onSuccess }) => {
     console.log("Creating Product Payload:", payload);
     try {
       await handleCreateProduct(payload);
-      alert("Product created successfully! Check console for payload.");
       
       setFormData({ title: '', description: '', priceAmount: '', priceCurrency: 'INR' });
       previews.forEach((url) => URL.revokeObjectURL(url));
@@ -198,7 +197,7 @@ const CreateProduct = ({ onSuccess }) => {
       setVariants([]);
       if (onSuccess) onSuccess();
     } catch (err) {
-      alert("Error creating product: " + err.message);
+      console.error("Error creating product: ", err.message);
     }
   };
 

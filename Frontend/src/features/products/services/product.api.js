@@ -87,3 +87,32 @@ export async function addProductVariant(productId, { variant }) {
     
     return response.data;
 }
+
+export async function updateProduct(productId, { title, description, priceAmount, priceCurrency, retainedImages, newImages }) {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("priceAmount", priceAmount);
+    formData.append("priceCurrency", priceCurrency);
+    
+    if (retainedImages) {
+        formData.append("retainedImages", JSON.stringify(retainedImages));
+    }
+
+    if (newImages && newImages.length > 0) {
+        newImages.forEach(file => {
+            formData.append("newImages", file);
+        });
+    }
+
+    const response = await productApiInstance.put(`/${productId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
+    
+    return response.data;
+}
+
+export async function deleteProduct(productId) {
+    const response = await productApiInstance.delete(`/${productId}`);
+    return response.data;
+}

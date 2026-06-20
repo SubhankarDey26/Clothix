@@ -19,7 +19,7 @@ const MAX_VARIANT_IMAGES = 7;
 const SellerProductDetails = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { handleProductDetailsById, handleAddProductVariant, loading } = useProduct();
+  const { handleProductDetailsById, handleAddProductVariant, handleUpdateProduct, loading } = useProduct();
 
   // --- Local State ---
   const baseFileInputRef = useRef(null);
@@ -194,10 +194,32 @@ const SellerProductDetails = () => {
   };
 
   // --- Submission ---
-  const handleSaveProductInfo = () => {
-    // A PUT endpoint would be needed here to update the basic info, 
-    // for now we just show a mock alert.
-    alert("Updating basic product info is not yet implemented via API in this iteration.");
+  const handleSaveProductInfo = async () => {
+    if (!productData.title || !productData.priceAmount) {
+      alert("Title and Base Price are required");
+      return;
+    }
+
+    const retainedImages = baseImages.filter(img => img.isExisting).map(img => ({ url: img.url }));
+    const newImages = baseImages.filter(img => img.isNew).map(img => img.file);
+
+    const payload = {
+      title: productData.title,
+      description: productData.description,
+      priceAmount: productData.priceAmount,
+      priceCurrency: productData.priceCurrency,
+      retainedImages,
+      newImages
+    };
+
+    try {
+      await handleUpdateProduct(productId, payload);
+      // Navigate back to seller dashboard silently without popup
+      navigate('/seller');
+    } catch (err) {
+      console.error("Failed to update product:", err);
+      alert("Failed to update product: " + err.message);
+    }
   };
 
   const handlePublishVariant = async (variantId) => {

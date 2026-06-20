@@ -6,7 +6,7 @@ import {  useNavigate } from 'react-router';
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
 const MyProducts = () => {
-  const { sellerProduct, loading, error, handleGetSellerProducts } = useProduct();
+  const { sellerProduct, loading, error, handleGetSellerProducts, handleDeleteProduct } = useProduct();
   const navigate = useNavigate();
 
 
@@ -22,21 +22,20 @@ const MyProducts = () => {
     // navigate(`/seller/edit-product/${productId}`);
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProductClick = async (productId) => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete this product?'
+      'Are you sure you want to delete this product? This action cannot be undone.'
     );
 
     if (!confirmed) return;
 
     try {
       console.log('Delete Product:', productId);
-
-      // await deleteProduct(productId);
-
-      handleGetSellerProducts();
+      await handleDeleteProduct(productId);
+      // No need to manually refresh here, the hook handles it
     } catch (err) {
       console.error(err);
+      alert("Failed to delete product.");
     }
   };
 
@@ -150,7 +149,7 @@ const MyProducts = () => {
                 </button>
 
                 <button
-                  onClick={() => handleDeleteProduct(product._id)}
+                  onClick={() => handleDeleteProductClick(product._id)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 text-sm font-medium transition-all duration-200"
                 >
                   <Trash2 size={16} />

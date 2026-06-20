@@ -51,9 +51,12 @@ const ProductDetail = () => {
   const amount = selectedVariant?.price?.amount || product?.price?.amount;
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   
-  const images = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) 
+  const baseImages = product?.image || [];
+  const variantImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) 
                   ? selectedVariant.images 
-                  : (product?.image || []);
+                  : [];
+                  
+  const images = [...baseImages, ...variantImages];
   const selectedImage = images[selectedImageIndex]?.url;
 
   const stock = selectedVariant ? selectedVariant.stock : 0;

@@ -10,7 +10,9 @@ import {
   getSellerProduct,
   getallproducts,
   getproductById,
-  addProductVariant
+  addProductVariant,
+  updateProduct,
+  deleteProduct
 } from "../services/product.api.js";
 
 export const useProduct = () => {
@@ -103,6 +105,44 @@ export const useProduct = () => {
     return data.product
   }
 
+  // Handle product basic info update
+  const handleUpdateProduct = async (productId, formData) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      const data = await updateProduct(productId, formData);
+      await handleGetSellerProducts();
+      return data;
+    } catch (error) {
+      const errorMsg = Array.isArray(error.response?.data?.errors)
+        ? error.response.data.errors.map((e) => e.msg).join(", ")
+        : error.response?.data?.message || error.message;
+      dispatch(setError(errorMsg));
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  // Handle product deletion
+  const handleDeleteProduct = async (productId) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      const data = await deleteProduct(productId);
+      await handleGetSellerProducts();
+      return data;
+    } catch (error) {
+      const errorMsg = Array.isArray(error.response?.data?.errors)
+        ? error.response.data.errors.map((e) => e.msg).join(", ")
+        : error.response?.data?.message || error.message;
+      dispatch(setError(errorMsg));
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   return {
     sellerProduct,
     products,
@@ -112,6 +152,8 @@ export const useProduct = () => {
     handleAddProductVariant,
     handleGetSellerProducts,
     handleGetAllProduct,
-    handleProductDetailsById
+    handleProductDetailsById,
+    handleUpdateProduct,
+    handleDeleteProduct
   };
 };
