@@ -10,6 +10,7 @@ import {
   getSellerProduct,
   getallproducts,
   getproductById,
+  addProductVariant
 } from "../services/product.api.js";
 
 export const useProduct = () => {
@@ -27,6 +28,25 @@ export const useProduct = () => {
       dispatch(setError(null));
       const data = await createProduct(formData);
       // Automatically refresh seller products on success
+      await handleGetSellerProducts();
+      return data;
+    } catch (error) {
+      const errorMsg = Array.isArray(error.response?.data?.errors)
+        ? error.response.data.errors.map((e) => e.msg).join(", ")
+        : error.response?.data?.message || error.message;
+      dispatch(setError(errorMsg));
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  // Handle adding variant to product
+  const handleAddProductVariant = async (productId, formData) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      const data = await addProductVariant(productId, formData);
       await handleGetSellerProducts();
       return data;
     } catch (error) {
@@ -89,6 +109,7 @@ export const useProduct = () => {
     loading,
     error,
     handleCreateProduct,
+    handleAddProductVariant,
     handleGetSellerProducts,
     handleGetAllProduct,
     handleProductDetailsById

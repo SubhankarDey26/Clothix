@@ -86,7 +86,7 @@ const SellerDashboard = () => {
           {activeTab === 'products' && <MyProducts />}
 
           {activeTab === 'create' && (
-            <div className="max-w-2xl">
+            <div className="w-full">
               <CreateProduct onSuccess={handleProductCreated} />
             </div>
           )}

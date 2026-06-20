@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/hook/useAuth.js';
 import { useSelector } from 'react-redux';
 import {
   ShoppingBag, ShoppingCart, Zap, ArrowLeft, ChevronLeft, ChevronRight,
-  ImageOff, LogOut, Menu, X, Truck, Shield, RefreshCw
+  ImageOff, LogOut, Menu, X, Truck, Shield, RefreshCw, Check
 } from 'lucide-react';
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
@@ -21,6 +21,9 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Variant State
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -29,6 +32,11 @@ const ProductDetail = () => {
         setError(null);
         const data = await handleProductDetailsById(productId);
         setProduct(data);
+        
+        // Auto-select first variant if exists
+        if (data && data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load product details.');
       } finally {
@@ -38,11 +46,22 @@ const ProductDetail = () => {
     fetchProduct();
   }, [productId]);
 
-  const currency = product?.price?.currency || 'INR';
-  const amount = product?.price?.amount;
+  // Derived state based on variant selection
+  const currency = selectedVariant?.price?.currency || product?.price?.currency || 'INR';
+  const amount = selectedVariant?.price?.amount || product?.price?.amount;
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
-  const images = product?.image || [];
+  
+  const images = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) 
+                  ? selectedVariant.images 
+                  : (product?.image || []);
   const selectedImage = images[selectedImageIndex]?.url;
+
+  const stock = selectedVariant ? selectedVariant.stock : 0;
+
+  // Reset image index when variant changes to ensure we don't look for out of bounds image index
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [selectedVariant]);
 
   const nextImage = () => {
     setSelectedImageIndex((prev) => (prev + 1) % images.length);
@@ -248,81 +267,121 @@ const ProductDetail = () => {
               )}
 
               {/* Title */}
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
+              <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">
                 {product.title}
               </h1>
 
               {/* Price */}
-              <div className="flex items-baseline gap-3 mb-8">
-                <p className="text-3xl md:text-4xl font-extrabold text-yellow-500">
-                  {currencySymbol}{amount}
-                </p>
-                <span className="text-sm font-medium text-neutral-500 bg-neutral-900 px-3 py-1 rounded-full">
-                  {currency}
-                </span>
+              <div className="flex items-end gap-3 mb-8">
+                {amount ? (
+                  <span className="text-3xl font-black text-yellow-500">
+                    {currencySymbol}{amount}
+                  </span>
+                ) : (
+                  <span className="text-2xl font-bold text-neutral-500">Price unavailable</span>
+                )}
               </div>
-
-              {/* Divider */}
-              <div className="border-t border-neutral-800/50 mb-8"></div>
+              
+              {/* Variants Section */}
+              {product.variants && product.variants.length > 0 && (
+                <div className="mb-8 p-6 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center justify-between">
+                    <span>Available Options</span>
+                    {stock > 0 ? (
+                      <span className="text-xs text-green-400 flex items-center gap-1 bg-green-400/10 px-2 py-1 rounded">
+                        <Check size={12} /> In Stock ({stock})
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-400 flex items-center gap-1 bg-red-400/10 px-2 py-1 rounded">
+                        Out of Stock
+                      </span>
+                    )}
+                  </h3>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    {product.variants.map((v) => {
+                      const isSelected = selectedVariant?._id === v._id;
+                      
+                      // Format attributes for display
+                      let attrLabel = "Variant";
+                      if (v.attributes) {
+                        attrLabel = Object.entries(v.attributes).map(([key, val]) => `${key}: ${val}`).join(' | ');
+                      }
+                      
+                      return (
+                        <button
+                          key={v._id}
+                          onClick={() => setSelectedVariant(v)}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all duration-300
+                            ${isSelected 
+                              ? 'bg-yellow-500 text-neutral-950 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]' 
+                              : 'bg-neutral-950 text-neutral-300 border-neutral-700 hover:border-yellow-500/50 hover:bg-neutral-900'}
+                          `}
+                        >
+                          {attrLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className="mb-10">
-                <h3 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-3">
-                  Description
-                </h3>
-                <p className="text-neutral-400 text-base leading-relaxed whitespace-pre-line">
+                <h3 className="text-sm font-bold text-neutral-300 uppercase tracking-wider mb-3">Description</h3>
+                <p className="text-neutral-400 leading-relaxed font-light">
                   {product.description}
                 </p>
               </div>
 
-              {/* Product Meta */}
-              <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="bg-neutral-900/50 border border-neutral-800/40 rounded-xl p-4">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Images</p>
-                  <p className="text-sm font-semibold text-neutral-200">{images.length} photo{images.length !== 1 ? 's' : ''}</p>
-                </div>
-                <div className="bg-neutral-900/50 border border-neutral-800/40 rounded-xl p-4">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Listed</p>
-                  <p className="text-sm font-semibold text-neutral-200">
-                    {product.createdAt
-                      ? new Date(product.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                      : '—'
-                    }
-                  </p>
-                </div>
-              </div>
-
-              {/* ─── Action Buttons ─── */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mt-auto border-t border-neutral-800/50 pt-8">
                 <button
-                  className="flex-1 flex items-center justify-center gap-2.5 py-4 bg-yellow-500 text-neutral-950 font-bold text-base rounded-2xl hover:bg-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)] focus:outline-none focus:ring-4 focus:ring-yellow-500/50 transition-all duration-300 transform active:scale-[0.98]"
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-bold text-lg transition-all
+                    ${product.variants && stock <= 0
+                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      : 'bg-yellow-500 text-neutral-950 hover:bg-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] transform active:scale-95'
+                    }
+                  `}
+                  disabled={product.variants && stock <= 0}
                 >
                   <Zap size={20} />
                   Buy Now
                 </button>
                 <button
-                  className="flex-1 flex items-center justify-center gap-2.5 py-4 bg-neutral-900 border border-neutral-800 text-neutral-200 font-bold text-base rounded-2xl hover:border-yellow-500/40 hover:text-yellow-500 hover:shadow-[0_0_20px_rgba(234,179,8,0.08)] focus:outline-none focus:ring-4 focus:ring-neutral-700/50 transition-all duration-300 transform active:scale-[0.98]"
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-bold text-lg border transition-all
+                    ${product.variants && stock <= 0
+                      ? 'bg-transparent border-neutral-800 text-neutral-600 cursor-not-allowed'
+                      : 'bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800 hover:border-neutral-600 transform active:scale-95'
+                    }
+                  `}
+                  disabled={product.variants && stock <= 0}
                 >
                   <ShoppingCart size={20} />
                   Add to Cart
                 </button>
               </div>
 
-              {/* ─── Trust Badges ─── */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { icon: <Truck size={20} />, label: 'Free Shipping', sub: 'On orders above ₹999' },
-                  { icon: <Shield size={20} />, label: 'Secure Payment', sub: '100% encrypted' },
-                  { icon: <RefreshCw size={20} />, label: 'Easy Returns', sub: '15-day window' },
-                ].map((badge, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-neutral-900/30 border border-neutral-800/30 rounded-xl p-4">
-                    <div className="text-yellow-500/70 mt-0.5">{badge.icon}</div>
-                    <div>
-                      <p className="text-xs font-semibold text-neutral-300">{badge.label}</p>
-                      <p className="text-[11px] text-neutral-600">{badge.sub}</p>
-                    </div>
+              {/* Trust Badges */}
+              <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-neutral-800/30">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-yellow-500">
+                    <Truck size={18} />
                   </div>
-                ))}
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">Fast Delivery</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-yellow-500">
+                    <RefreshCw size={18} />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">7-Day Return</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-yellow-500">
+                    <Shield size={18} />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">Secure Pay</span>
+                </div>
               </div>
 
             </div>
@@ -330,23 +389,11 @@ const ProductDetail = () => {
         )}
       </main>
 
-
       {/* ═══ Footer ═══ */}
-      <footer className="border-t border-neutral-800/50 bg-neutral-950 py-12 mt-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="text-yellow-500" size={18} />
-              <span className="text-sm font-extrabold text-yellow-500 tracking-widest uppercase">CLOTHIX</span>
-            </div>
-            <p className="text-neutral-600 text-sm">© 2026 CLOTHIX. All rights reserved.</p>
-            <div className="flex gap-6">
-              <a href="#" className="text-neutral-600 text-sm hover:text-yellow-500 transition">Privacy</a>
-              <a href="#" className="text-neutral-600 text-sm hover:text-yellow-500 transition">Terms</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <div className="border-t border-neutral-900 py-8 text-center bg-neutral-950">
+        <p className="text-neutral-700 text-sm">© 2026 CLOTHIX</p>
+      </div>
+
     </div>
   );
 };

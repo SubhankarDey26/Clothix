@@ -6,6 +6,7 @@ import SellerDashboard from "../features/products/pages/SellerDashboard"
 import ProtectedRoute from "./ProtectedRoute"
 import ShowAllProduct from "../features/products/pages/ShowAllProduct"
 import ProductDetail from "../features/products/pages/ProductDetail"
+import SellerProductDetails from "../features/products/pages/SellerProductDetails"
 
 export const routes=createBrowserRouter([
     {
@@ -35,5 +36,13 @@ export const routes=createBrowserRouter([
     {
         path:"/product/:productId",
         element:<ProductDetail/>
+    },
+    {
+        path:"/seller/product/:productId",
+        element:(
+            <ProtectedRoute>
+                <SellerProductDetails/>
+            </ProtectedRoute>
+        )
     }
 ])
