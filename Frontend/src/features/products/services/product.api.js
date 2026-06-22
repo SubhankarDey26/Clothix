@@ -62,7 +62,6 @@ export async function getproductById(productId) {
     return response.data;
 }
 
-// New API to add a variant to an existing product
 export async function addProductVariant(productId, { variant }) {
     const formData = new FormData();
     

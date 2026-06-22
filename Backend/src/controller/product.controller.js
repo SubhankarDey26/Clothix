@@ -89,7 +89,6 @@ export async function createProduct(req, res) {
     }
 }
 
-
 export async function getSeller(req, res) {
     try {
         const seller = req.user;
@@ -105,7 +104,6 @@ export async function getSeller(req, res) {
     }
 }
 
-
 export async function ShowAllProducts(req, res) {
     try {
         const products = await ProductModel.find();
@@ -118,7 +116,6 @@ export async function ShowAllProducts(req, res) {
         res.status(500).json({ message: "Failed to fetch products", success: false });
     }
 }
-
 
 export async function getProductDetails(req, res) {
     try {
@@ -141,7 +138,6 @@ export async function getProductDetails(req, res) {
         res.status(500).json({ message: "Failed to fetch product details", success: false });
     }
 }
-
 
 export async function updateProduct(req, res) {
     try {
@@ -198,7 +194,6 @@ export async function updateProduct(req, res) {
         res.status(500).json({ message: "Failed to update product", success: false, error: error.message });
     }
 }
-
 
 export async function addProductVariant(req, res) {
     try {

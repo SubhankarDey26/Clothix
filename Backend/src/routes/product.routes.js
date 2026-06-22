@@ -8,7 +8,6 @@ import multer from "multer"
 
 const productRouter=Router()
 
-
 const upload=multer({
     storage:multer.memoryStorage(),
     limits:{
