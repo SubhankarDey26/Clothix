@@ -3,7 +3,7 @@ import { useProduct } from '../hook/useProduct.js';
 import { useAuth } from '../../auth/hook/useAuth.js';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { ShoppingBag, ImageOff, Search, SlidersHorizontal, X, Menu, ArrowUp, LogOut } from 'lucide-react';
+import { ShoppingBag, ImageOff, Search, SlidersHorizontal, X, Menu, ArrowUp, LogOut, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
@@ -115,6 +115,7 @@ const ShowAllProduct = () => {
   const { products, loading, error, handleGetAllProduct } = useProduct();
   const { handleLogout } = useAuth();
   const { user } = useSelector((state) => state.auth);
+  const { items } = useSelector((state) => state.cart);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
@@ -170,7 +171,7 @@ const ShowAllProduct = () => {
       {/* ═══ Navigation ═══ */}
       <nav className="sticky top-0 z-50 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={user ? "/buyer" : "/"} className="flex items-center gap-2">
             <ShoppingBag className="text-yellow-500" size={24} />
             <span className="text-xl font-extrabold text-yellow-500 tracking-widest uppercase">CLOTHIX</span>
           </Link>
@@ -185,7 +186,15 @@ const ShowAllProduct = () => {
           </div> */}
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
+            <Link to="/cart" className="relative p-2 text-neutral-300 hover:text-yellow-500 transition group">
+              <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
+              {items && items.length > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-yellow-500 text-neutral-950 text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {items.length}
+                </span>
+              )}
+            </Link>
             {user ? (
               <>
                 <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>
@@ -225,6 +234,9 @@ const ShowAllProduct = () => {
                 <Link to="/seller" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Seller Dashboard</Link>
               )}
               <hr className="border-neutral-800" />
+              <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-neutral-300 font-medium hover:text-yellow-500 transition">
+                <ShoppingCart size={20} /> Cart {items && items.length > 0 && `(${items.length})`}
+              </Link>
               {user ? (
                 <>
                   <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>

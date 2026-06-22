@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router';
 import { useProduct } from '../hook/useProduct.js';
 import { useAuth } from '../../auth/hook/useAuth.js';
 import { useSelector } from 'react-redux';
+import { useCart } from '../../cart/hooks/useCart.js';
 import {
   ShoppingBag, ShoppingCart, Zap, ArrowLeft, ChevronLeft, ChevronRight,
   ImageOff, LogOut, Menu, X, Truck, Shield, RefreshCw, Check
@@ -15,6 +16,7 @@ const ProductDetail = () => {
   const { handleProductDetailsById } = useProduct();
   const { handleLogout } = useAuth();
   const { user } = useSelector((state) => state.auth);
+  const { items, handleAddToCart, loading: cartLoading } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ const ProductDetail = () => {
       {/* ═══ Navigation ═══ */}
       <nav className="sticky top-0 z-50 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={user ? "/buyer" : "/"} className="flex items-center gap-2">
             <ShoppingBag className="text-yellow-500" size={24} />
             <span className="text-xl font-extrabold text-yellow-500 tracking-widest uppercase">CLOTHIX</span>
           </Link>
@@ -96,7 +98,15 @@ const ProductDetail = () => {
           </div>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
+            <Link to="/cart" className="relative p-2 text-neutral-300 hover:text-yellow-500 transition group">
+              <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
+              {items && items.length > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-yellow-500 text-neutral-950 text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {items.length}
+                </span>
+              )}
+            </Link>
             {user ? (
               <>
                 <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>
@@ -132,6 +142,9 @@ const ProductDetail = () => {
                 <Link to="/seller" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Seller Dashboard</Link>
               )}
               <hr className="border-neutral-800" />
+              <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-neutral-300 font-medium hover:text-yellow-500 transition">
+                <ShoppingCart size={20} /> Cart {items && items.length > 0 && `(${items.length})`}
+              </Link>
               {user ? (
                 <>
                   <p className="text-sm text-neutral-400">{user.fullname || 'User'}</p>
@@ -292,7 +305,7 @@ const ProductDetail = () => {
                     <span>Available Options</span>
                     {stock > 0 ? (
                       <span className="text-xs text-green-400 flex items-center gap-1 bg-green-400/10 px-2 py-1 rounded">
-                        <Check size={12} /> In Stock ({stock})
+                        <Check size={12} /> In Stock
                       </span>
                     ) : (
                       <span className="text-xs text-red-400 flex items-center gap-1 bg-red-400/10 px-2 py-1 rounded">
@@ -352,16 +365,25 @@ const ProductDetail = () => {
                   Buy Now
                 </button>
                 <button
+                  onClick={() => {
+                    if (product && selectedVariant) {
+                      handleAddToCart(product._id, selectedVariant._id);
+                    }
+                  }}
                   className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-bold text-lg border transition-all
-                    ${product.variants && stock <= 0
+                    ${(product.variants && stock <= 0) || cartLoading
                       ? 'bg-transparent border-neutral-800 text-neutral-600 cursor-not-allowed'
                       : 'bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800 hover:border-neutral-600 transform active:scale-95'
                     }
                   `}
-                  disabled={product.variants && stock <= 0}
+                  disabled={(product.variants && stock <= 0) || cartLoading}
                 >
-                  <ShoppingCart size={20} />
-                  Add to Cart
+                  {cartLoading ? (
+                    <div className="w-5 h-5 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <ShoppingCart size={20} />
+                  )}
+                  {cartLoading ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>
 

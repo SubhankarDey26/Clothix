@@ -1,20 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ShoppingBag, Sparkles, Star, Truck, Shield, RefreshCw, ChevronRight, Menu, X } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Sparkles, Star, Truck, Shield, RefreshCw, ChevronRight, Menu, X, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router';
+import { useSelector } from 'react-redux';
 
 /* ─── Data ─── */
-const PRODUCTS = [
-  { id: 1, name: "Shadow Oversized Tee", price: "₹1,499", category: "T-Shirts", image: "/images/product_black_tshirt.png", badge: "Bestseller" },
-  { id: 2, name: "Sahara Linen Shirt", price: "₹2,199", category: "Shirts", image: "/images/product_beige_shirt.png", badge: "New" },
-  { id: 3, name: "Nomad Cargo Joggers", price: "₹1,899", category: "Bottomwear", image: "/images/product_cargo_pants.png", badge: null },
-  { id: 4, name: "Indigo Denim Jacket", price: "₹3,499", category: "Outerwear", image: "/images/product_denim_jacket.png", badge: "Trending" },
-  { id: 5, name: "Ivory Classic Sneakers", price: "₹2,799", category: "Footwear", image: "/images/product_white_sneakers.png", badge: null },
-  { id: 6, name: "Ember Suede Bomber", price: "₹4,999", category: "Outerwear", image: "/images/product_brown_jacket.png", badge: "Premium" },
-];
-
 const CATEGORIES = ["T-Shirts", "Shirts", "Outerwear", "Bottomwear", "Footwear", "Accessories"];
 
-const MARQUEE_TEXT = "SUMMER SALE — UP TO 40% OFF  ✦  FREE SHIPPING ON ₹999+  ✦  NEW ARRIVALS EVERY FRIDAY  ✦  ";
+const PRODUCT_IMAGES = [
+  { src: "/images/product_black_tshirt.png", label: "Shadow Oversized Tee" },
+  { src: "/images/product_beige_shirt.png", label: "Sahara Linen Shirt" },
+  { src: "/images/product_cargo_pants.png", label: "Nomad Cargo Joggers" },
+  { src: "/images/product_denim_jacket.png", label: "Indigo Denim Jacket" },
+  { src: "/images/product_white_sneakers.png", label: "Ivory Classic Sneakers" },
+  { src: "/images/product_brown_jacket.png", label: "Ember Suede Bomber" },
+];
+
+const MOOD_BOARDS = [
+  { src: "/images/product_black_tshirt.png",  headline: "STREET",  sub: "STYLE",   accent: "#eab308" },
+  { src: "/images/product_beige_shirt.png",   headline: "SUMMER",  sub: "VIBES",   accent: "#f97316" },
+  { src: "/images/product_denim_jacket.png",  headline: "CASUAL",  sub: "COOL",    accent: "#3b82f6" },
+  { src: "/images/product_brown_jacket.png",  headline: "LUXURY",  sub: "CURATED", accent: "#eab308" },
+  { src: "/images/product_cargo_pants.png",   headline: "NOMAD",   sub: "OUTDOOR", accent: "#22c55e" },
+];
+
+const STEALS = [
+  { src: "/images/product_beige_shirt.png",  tag: "FLAT",     highlight: "30% OFF", detail: "ALL SHIRTS",  bg: "from-neutral-900 to-neutral-800" },
+  { src: null,                               tag: "STYLES AT", highlight: "₹999",   detail: "XL & XXL",    bg: "from-yellow-500/20 to-yellow-500/5", textMain: "#eab308" },
+  { src: "/images/product_cargo_pants.png",  tag: "FLAT",     highlight: "40% OFF", detail: "ALL CARGOS",  bg: "from-neutral-900 to-neutral-800" },
+  { src: null,                               tag: "",          highlight: "SALE",   detail: "UP TO 50%",   bg: "from-neutral-800 to-neutral-700", textMain: "#ffffff" },
+];
 
 const TESTIMONIALS = [
   { name: "Arjun M.", text: "The quality is insane for the price. Clothix is my go-to now.", rating: 5 },
@@ -42,53 +56,6 @@ const useInView = (options = {}) => {
   return [ref, isInView];
 };
 
-/* ─── Sub-components ─── */
-const ProductCard = ({ product, index }) => {
-  const [ref, isInView] = useInView();
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <div
-      ref={ref}
-      className={`group relative bg-neutral-900/60 rounded-2xl border border-neutral-800/40 overflow-hidden transition-all duration-500 hover:border-yellow-500/30 hover:shadow-[0_0_30px_rgba(234,179,8,0.08)] ${isInView ? 'animate-fade-in-up' : 'opacity-0'}`}
-      style={{ animationDelay: `${index * 0.1}s` }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Badge */}
-      {product.badge && (
-        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-yellow-500 text-neutral-950 text-xs font-bold rounded-full uppercase tracking-wider">
-          {product.badge}
-        </div>
-      )}
-
-      {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-neutral-950/50">
-        <img
-          src={product.image}
-          alt={product.name}
-          className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
-        />
-        <div className={`absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}></div>
-
-        {/* Quick Action */}
-        <div className={`absolute bottom-4 left-4 right-4 transition-all duration-400 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <button className="w-full py-3 bg-yellow-500 text-neutral-950 font-bold text-sm rounded-xl hover:bg-yellow-400 transition active:scale-[0.97]">
-            Quick View
-          </button>
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-5">
-        <p className="text-xs text-yellow-500/70 font-medium uppercase tracking-widest mb-1">{product.category}</p>
-        <h3 className="text-base font-semibold text-neutral-100 mb-2">{product.name}</h3>
-        <p className="text-lg font-bold text-white">{product.price}</p>
-      </div>
-    </div>
-  );
-};
-
 const StatItem = ({ value, label, delay }) => {
   const [ref, isInView] = useInView();
   return (
@@ -104,23 +71,17 @@ const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroRef, heroInView] = useInView();
   const [categoryRef, categoryInView] = useInView();
+  const { items } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.auth);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200 font-sans relative overflow-hidden">
 
-      {/* ═══ Announcement Marquee ═══ */}
-      <div className="bg-yellow-500 text-neutral-950 py-2 overflow-hidden whitespace-nowrap">
-        <div className="animate-marquee inline-flex">
-          {[...Array(4)].map((_, i) => (
-            <span key={i} className="text-xs font-bold tracking-widest uppercase mx-4">{MARQUEE_TEXT}</span>
-          ))}
-        </div>
-      </div>
 
       {/* ═══ Navigation ═══ */}
       <nav className="sticky top-0 z-50 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={user ? "/buyer" : "/"} className="flex items-center gap-2">
             <ShoppingBag className="text-yellow-500" size={24} />
             <span className="text-xl font-extrabold text-yellow-500 tracking-widest uppercase">CLOTHIX</span>
           </Link>
@@ -133,7 +94,15 @@ const Landing = () => {
           </div>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
+            <Link to="/cart" className="relative p-2 text-neutral-300 hover:text-yellow-500 transition group">
+              <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
+              {items && items.length > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-yellow-500 text-neutral-950 text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {items.length}
+                </span>
+              )}
+            </Link>
             <Link to="/login" className="px-5 py-2 text-neutral-300 font-medium hover:text-yellow-400 transition">
               Login
             </Link>
@@ -156,6 +125,9 @@ const Landing = () => {
               <a href="#categories" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Categories</a>
               <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block text-neutral-300 font-medium hover:text-yellow-500 transition">Reviews</a>
               <hr className="border-neutral-800" />
+              <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-neutral-300 font-medium hover:text-yellow-500 transition">
+                <ShoppingCart size={20} /> Cart {items && items.length > 0 && `(${items.length})`}
+              </Link>
               <Link to="/login" className="block text-neutral-300 font-medium hover:text-yellow-400 transition">Login</Link>
               <Link to="/register" className="block text-center py-3 bg-yellow-500 text-neutral-950 font-bold rounded-full hover:bg-yellow-400 transition">Sign Up</Link>
             </div>
@@ -244,24 +216,151 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ═══ Featured Products ═══ */}
-      <section id="products" className="py-24 bg-neutral-950">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
-            <div>
-              <p className="text-yellow-500 text-sm font-bold uppercase tracking-widest mb-3">Curated</p>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-white">Trending Now</h2>
+      {/* ═══ Product Image Scroll Strip ═══ */}
+      <div className="relative overflow-hidden py-10 border-y border-neutral-800/50 bg-neutral-900/30">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r from-neutral-950 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none" />
+
+        <div className="animate-image-marquee inline-flex gap-6 whitespace-nowrap">
+          {[...PRODUCT_IMAGES, ...PRODUCT_IMAGES, ...PRODUCT_IMAGES].map((img, i) => (
+            <div
+              key={i}
+              className="group relative flex-shrink-0 w-52 h-64 rounded-2xl overflow-hidden border border-neutral-800/40 hover:border-yellow-500/30 transition-all duration-500"
+            >
+              <img
+                src={img.src}
+                alt={img.label}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent" />
+              <p className="absolute bottom-3 left-3 right-3 text-xs font-bold text-white uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {img.label}
+              </p>
             </div>
-            <Link to="/buyer" className="flex items-center gap-1 text-yellow-500 font-medium hover:gap-3 transition-all">
-              View All <ChevronRight size={18} />
-            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ Match The Mood ═══ */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <p className="text-yellow-500 text-xs font-bold uppercase tracking-[0.3em] mb-2">Curated For You</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wide">Match The Mood</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PRODUCTS.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+          <div className="flex gap-3 overflow-x-auto pb-2 justify-center">
+            {MOOD_BOARDS.map((mood, i) => (
+              <Link
+                to="/buyer"
+                key={i}
+                className="group relative flex-shrink-0 w-44 md:w-52 rounded-2xl overflow-hidden cursor-pointer"
+                style={{ height: '280px' }}
+              >
+                <img
+                  src={mood.src}
+                  alt={mood.headline}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                {/* Dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/30 to-transparent" />
+                {/* Subtle color tint on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                  style={{ background: mood.accent }}
+                />
+                {/* Text */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-white text-lg font-black uppercase leading-none tracking-tight">{mood.headline}</p>
+                  <p className="font-black uppercase text-sm leading-none tracking-widest mt-0.5" style={{ color: mood.accent }}>{mood.sub}</p>
+                </div>
+                {/* Border glow on hover */}
+                <div
+                  className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-yellow-500/50 transition-all duration-300"
+                />
+              </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ═══ Steals ═══ */}
+      <section className="py-20 bg-neutral-900/20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <p className="text-yellow-500 text-xs font-bold uppercase tracking-[0.3em] mb-2">Limited Time</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wide">Steals</h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {STEALS.map((deal, i) => (
+              <Link
+                to="/buyer"
+                key={i}
+                className={`group relative rounded-2xl overflow-hidden cursor-pointer bg-gradient-to-br ${deal.bg} border border-neutral-800/50 hover:border-yellow-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(234,179,8,0.1)]`}
+                style={{ height: '200px' }}
+              >
+                {deal.src && (
+                  <img
+                    src={deal.src}
+                    alt={deal.detail}
+                    className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-700"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/20 to-transparent" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                  {deal.tag && (
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-300 mb-1">{deal.tag}</p>
+                  )}
+                  <p
+                    className="font-black leading-none uppercase"
+                    style={{
+                      fontSize: deal.highlight.length <= 4 ? '3.5rem' : '2rem',
+                      color: deal.textMain || '#eab308',
+                      textShadow: '0 0 30px rgba(234,179,8,0.3)'
+                    }}
+                  >
+                    {deal.highlight}
+                  </p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-neutral-300 mt-2">{deal.detail}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Last Chance Banner ═══ */}
+      <section className="py-10 px-6">
+        <div className="max-w-7xl mx-auto">
+          <Link
+            to="/buyer"
+            className="group relative rounded-3xl overflow-hidden flex items-center min-h-[280px] md:min-h-[320px] cursor-pointer border border-neutral-800/50 hover:border-yellow-500/30 transition-all duration-500"
+          >
+            {/* Background image */}
+            <img
+              src="/images/hero_fashion.png"
+              alt="Last Chance"
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-50 group-hover:opacity-60 group-hover:scale-[1.02] transition-all duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/95 via-neutral-950/60 to-transparent" />
+
+            {/* Text */}
+            <div className="relative z-10 px-10 py-12">
+              <p className="text-yellow-500 text-xs font-bold uppercase tracking-[0.3em] mb-3">Shop Your Size</p>
+              <h2 className="text-white text-4xl md:text-6xl font-black uppercase leading-none mb-2">
+                Last Chance!
+              </h2>
+              <p className="text-neutral-300 text-lg font-light mb-5">Few sizes left — don't miss out</p>
+              <p className="text-yellow-500 text-3xl md:text-5xl font-black uppercase">
+                UPTO <span className="text-white">30% OFF</span>
+              </p>
+              <div className="mt-8 inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 text-neutral-950 font-bold text-base rounded-full group-hover:bg-yellow-400 group-hover:shadow-[0_0_25px_rgba(234,179,8,0.4)] transition-all transform group-hover:-translate-y-1">
+                Shop Now <ChevronRight size={20} />
+              </div>
+            </div>
+          </Link>
         </div>
       </section>
 
