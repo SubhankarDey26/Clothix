@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { ShoppingBag, LayoutGrid, PlusCircle, LogOut } from 'lucide-react';
 import CreateProduct from './CreateProduct';
 import MyProducts from './MyProducts';
+import { useAuth } from '../../auth/hook/useAuth';
 
 const TABS = [
   { id: 'products', label: 'My Products', icon: <LayoutGrid size={18} /> },
@@ -13,6 +14,7 @@ const TABS = [
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('products');
   const { user } = useSelector((state) => state.auth);
+  const { handleLogout } = useAuth();
 
   const handleProductCreated = () => {
     // Switch back to products tab after successful creation
@@ -43,13 +45,13 @@ const SellerDashboard = () => {
             </p>
 
             {/* Back to store */}
-            <Link
-              to="/home"
-              className="p-2 text-neutral-500 hover:text-neutral-300 transition"
-              title="Back to store"
+            <button
+              onClick={handleLogout}
+              className="p-2 text-neutral-500 hover:text-red-400 transition"
+              title="Logout"
             >
               <LogOut size={18} />
-            </Link>
+            </button>
           </div>
         </div>
       </nav>

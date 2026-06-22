@@ -3,27 +3,34 @@ import UserModel from "../models/user.model.js";
 import {config} from "../config/config.js"
 
 // Helper: Generate JWT token and send response
-async function sendTokenResponse(user,res,message)
-{
-    const token=jwt.sign({
-        id:user._id
-    },config.JWT_SECRET,
-    {expiresIn:"7d"})
+async function sendTokenResponse(user, res, message) {
+    const token = jwt.sign(
+        { id: user._id },
+        config.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
 
-    // TODO: Set secure and httpOnly flags for production
-    res.cookie("token",token)
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+    };
+
+    res.cookie("token", token, cookieOptions);
 
     res.status(200).json({
         message,
-        success:true,
-        user:{
-            id:user._id,
-            email:user.email,
-            contact:user.contact,
-            fullname:user.fullname,
-            role:user.role
+        success: true,
+        user: {
+            id: user._id,
+            email: user.email,
+            contact: user.contact,
+            fullname: user.fullname,
+            role: user.role
         }
-    })
+    });
 }
 
 // Controller: Handle user registration

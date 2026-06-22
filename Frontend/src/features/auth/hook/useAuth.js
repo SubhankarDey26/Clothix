@@ -76,6 +76,9 @@ export const useAuth=()=>{
             // Even if the API call fails, clear the user locally
             console.log(error)
             dispatch(setUsers(null))
+        } finally {
+            // Force reload to the landing page to guarantee state is wiped
+            window.location.href = "/"
         }
     }
 
