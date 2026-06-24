@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Root project to deploy frontend and backend to Render",
   "scripts": {
-    "install-frontend": "npm install --prefix Frontend",
+    "install-frontend": "npm install --include=dev --prefix Frontend",
     "install-backend": "npm install --prefix Backend",
     "build-frontend": "npm run build --prefix Frontend",
     "build": "npm run install-frontend && npm run build-frontend && npm run install-backend",
