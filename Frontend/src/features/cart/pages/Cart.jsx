@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useCart } from '../hooks/useCart';
 import { Link } from 'react-router';
 import { ShoppingBag, ArrowLeft, Trash2, ShoppingCart, Plus, Minus } from 'lucide-react';
-import Nav from '../../shared/components/Nav.jsx';
+import Nav from '../../shared/components/nav.jsx';
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
 
