@@ -1,6 +1,5 @@
 import {param,body,validationResult} from "express-validator"
 
-
 const validateRequest=(req,res,next)=>{
     const error=validationResult(req);
     if(!error.isEmpty())
@@ -11,8 +10,6 @@ const validateRequest=(req,res,next)=>{
     }
     next();
 }
-
-
 
 export const validateAddtoCart=[
     param("productId").isMongoId().withMessage("Invalid product Id"),

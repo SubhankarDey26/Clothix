@@ -8,15 +8,22 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { config } from "./config/config.js"
 import productRouter from "./routes/product.routes.js"
 import cartRouter from "./routes/cart.routes.js"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app=express()
 
 
 
 app.use(cors({
-    origin:"http://localhost:5173",
-    methods:["GET","POST","PUT","DELETE"],
-    credentials:true
+    origin: (origin, callback) => {
+        callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
 }))
 
 app.use(express.json())
@@ -42,5 +49,12 @@ app.use("/api/auth",authrouter)
 app.use("/api/products",productRouter)
 app.use("/api/cart",cartRouter)
 
+// Serve static assets from public folder
+app.use(express.static(path.join(__dirname, "../public")))
+
+// Wildcard route to serve index.html for client-side routing
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"))
+})
 
 export default app
