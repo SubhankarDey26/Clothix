@@ -10,14 +10,16 @@ import productRouter from "./routes/product.routes.js"
 import cartRouter from "./routes/cart.routes.js"
 import path from "path"
 import { fileURLToPath } from "url"
+import helmet from "helmet"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app=express()
 
-
-
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}))
 app.use(cors({
     origin: (origin, callback) => {
         callback(null, true);

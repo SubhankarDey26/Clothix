@@ -3,15 +3,50 @@ import { useCart } from '../hooks/useCart';
 import { Link } from 'react-router';
 import { ShoppingBag, ArrowLeft, Trash2, ShoppingCart, Plus, Minus } from 'lucide-react';
 import Nav from "../../shared/components/Nav.jsx";
+import { useRazorpay} from "react-razorpay";
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
 
 const Cart = () => {
     const { items, totalPrice: backendTotalPrice, loading, error, handleGetCart, handleUpdateQuantity, handleRemoveItem } = useCart();
 
+    const { error: razorpayError, isLoading, Razorpay } = useRazorpay();
+
     useEffect(() => {
         handleGetCart();
     }, []);
+
+     const handlePayment = () => {
+        const options = {
+            key: "rzp_test_dummykey12345", // Dummy key
+            amount: Math.round(total * 100), // Dynamic amount based on cart total
+            currency: "INR",
+            name: "CLOTHIX",
+            description: "Test Transaction",
+            order_id: "order_9A33XWu170gUtm", // Dummy order ID
+            handler: (response) => {
+                console.log(response);
+                alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
+            },
+            prefill: {
+                name: "John Doe",
+                email: "john.doe@example.com",
+                contact: "9999999999",
+            },
+            theme: {
+                color: "#F37254",
+            },
+        };
+
+        const rzp1 = new Razorpay(options);
+        
+        rzp1.on("payment.failed", function (response) {
+            console.error(response.error);
+            alert("Payment Failed: " + response.error.description);
+        });
+
+        rzp1.open();
+    };
 
     // Calculate Subtotal (Fallback)
     const calculateSubtotal = () => {
@@ -215,7 +250,7 @@ const Cart = () => {
                                     <span className="text-2xl font-black text-yellow-500">{currencySymbol}{total.toFixed(2)}</span>
                                 </div>
                                 
-                                <button className="w-full py-4 bg-yellow-500 text-neutral-950 font-bold text-lg rounded-2xl hover:bg-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all transform active:scale-[0.98]">
+                                <button onClick={handlePayment} className="w-full py-4 bg-yellow-500 text-neutral-950 font-bold text-lg rounded-2xl hover:bg-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all transform active:scale-[0.98]">
                                     Proceed to Checkout
                                 </button>
 
