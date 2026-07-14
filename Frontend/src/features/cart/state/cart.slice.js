@@ -5,6 +5,7 @@ const cartSlice = createSlice({
     initialState: {
         items: [],
         cartId: null,
+        totalPrice: 0,
         loading: false,
         error: null
     },
@@ -12,6 +13,7 @@ const cartSlice = createSlice({
         setItems: (state, action) => {
             state.items = action.payload.items || [];
             state.cartId = action.payload._id || null;
+            state.totalPrice = action.payload.totalPrice || 0;
         },
         setLoading: (state, action) => {
             state.loading = action.payload;

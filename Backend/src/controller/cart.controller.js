@@ -1,6 +1,51 @@
 import cartModel from "../models/cart.model.js";
 import ProductModel from "../models/product.model.js";
 
+const calculateCartTotal = async (userId) => {
+    const aggregationResult = await cartModel.aggregate([
+        { $match: { user: userId } },
+        { $unwind: { path: '$items' } },
+        {
+            $lookup: {
+                from: 'products',
+                localField: 'items.product',
+                foreignField: '_id',
+                as: 'items.product'
+            }
+        },
+        { $unwind: { path: '$items.product' } },
+        { $unwind: { path: '$items.product.variants', preserveNullAndEmptyArrays: true } },
+        {
+            $match: {
+                $expr: {
+                    $or: [
+                        { $eq: ['$items.variant', null] },
+                        { $eq: ['$items.variant', '$items.product.variants._id'] }
+                    ]
+                }
+            }
+        },
+        {
+            $addFields: {
+                itemPrice: {
+                    $multiply: [
+                        '$items.quantity',
+                        { $ifNull: ['$items.product.variants.price.amount', '$items.product.price.amount'] }
+                    ]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: '$_id',
+                totalPrice: { $sum: '$itemPrice' }
+            }
+        }
+    ]);
+
+    return aggregationResult.length > 0 ? aggregationResult[0].totalPrice : 0;
+};
+
 export const addtoCart = async (req, res) => {
     try {
         const { productId, variantId } = req.params;
@@ -82,11 +127,15 @@ export const addtoCart = async (req, res) => {
 
         // Save the updated cart
         await cart.save();
+        await cart.populate("items.product");
+
+        const cartTotal = await calculateCartTotal(req.user._id);
 
         return res.status(200).json({
             message: "Product added to cart successfully",
             success: true,
-            cart
+            cart,
+            totalPrice: cartTotal
         });
     } catch (error) {
         return res.status(500).json({
@@ -98,21 +147,37 @@ export const addtoCart = async (req, res) => {
 };
 
 
-export const getcart=async (req,res)=>{
-    const user=req.user
+export const getcart = async (req, res) => {
+    try {
+        const user = req.user;
 
-    let cart=await cartModel.findOne({user:user._id}).populate("items.product")
+        let cart = await cartModel.findOne({ user: user._id }).populate("items.product");
 
-    if(!cart)
-    {
-        cart=await cartModel.create({user:user._id})
+        if (!cart) {
+            cart = await cartModel.create({ user: user._id });
+            return res.status(200).json({
+                message: "Cart fetched sucessfully",
+                success: true,
+                cart,
+                totalPrice: 0
+            });
+        }
+
+        const cartTotal = await calculateCartTotal(user._id);
+
+        return res.status(200).json({
+            message: "Cart fetched sucessfully",
+            success: true,
+            cart,
+            totalPrice: cartTotal
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error while fetching cart",
+            success: false,
+            error: error.message
+        });
     }
-
-    return res.status(200).json({
-        message:"Cart fetched sucessfully",
-        success:true,
-        cart
-    })
 }
 
 export const updateCartItemQuantity = async (req, res) => {
@@ -159,10 +224,13 @@ export const updateCartItemQuantity = async (req, res) => {
         await cart.save();
         await cart.populate("items.product");
 
+        const cartTotal = await calculateCartTotal(req.user._id);
+
         return res.status(200).json({
             message: "Cart updated successfully",
             success: true,
-            cart
+            cart,
+            totalPrice: cartTotal
         });
 
     } catch (error) {
@@ -194,10 +262,13 @@ export const removeFromCart = async (req, res) => {
         await cart.save();
         await cart.populate("items.product");
 
+        const cartTotal = await calculateCartTotal(req.user._id);
+
         return res.status(200).json({
             message: "Item removed from cart",
             success: true,
-            cart
+            cart,
+            totalPrice: cartTotal
         });
 
     } catch (error) {

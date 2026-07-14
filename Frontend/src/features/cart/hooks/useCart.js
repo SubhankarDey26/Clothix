@@ -4,7 +4,7 @@ import { addItemApi, getCartApi, updateItemQuantityApi, removeItemApi } from "..
 
 export const useCart = () => {
     const dispatch = useDispatch();
-    const { items, cartId, loading, error } = useSelector((state) => state.cart);
+    const { items, cartId, totalPrice, loading, error } = useSelector((state) => state.cart);
 
     const handleGetCart = async () => {
         try {
@@ -12,7 +12,7 @@ export const useCart = () => {
             dispatch(setError(null));
             const data = await getCartApi();
             if (data.success && data.cart) {
-                dispatch(setItems(data.cart));
+                dispatch(setItems({ ...data.cart, totalPrice: data.totalPrice }));
             }
             return data;
         } catch (error) {
@@ -32,7 +32,7 @@ export const useCart = () => {
             dispatch(setError(null));
             const data = await addItemApi({ productId, variantId });
             if (data.success && data.cart) {
-                dispatch(setItems(data.cart));
+                dispatch(setItems({ ...data.cart, totalPrice: data.totalPrice }));
             }
             return data;
         } catch (error) {
@@ -52,7 +52,7 @@ export const useCart = () => {
             dispatch(setError(null));
             const data = await updateItemQuantityApi({ productId, variantId, quantity });
             if (data.success && data.cart) {
-                dispatch(setItems(data.cart));
+                dispatch(setItems({ ...data.cart, totalPrice: data.totalPrice }));
             }
             return data;
         } catch (error) {
@@ -72,7 +72,7 @@ export const useCart = () => {
             dispatch(setError(null));
             const data = await removeItemApi({ productId, variantId });
             if (data.success && data.cart) {
-                dispatch(setItems(data.cart));
+                dispatch(setItems({ ...data.cart, totalPrice: data.totalPrice }));
             }
             return data;
         } catch (error) {
@@ -86,5 +86,5 @@ export const useCart = () => {
         }
     };
 
-    return { items, cartId, loading, error, handleGetCart, handleAddToCart, handleUpdateQuantity, handleRemoveItem };
+    return { items, cartId, totalPrice, loading, error, handleGetCart, handleAddToCart, handleUpdateQuantity, handleRemoveItem };
 };

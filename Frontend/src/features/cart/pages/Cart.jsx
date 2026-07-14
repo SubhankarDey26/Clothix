@@ -7,22 +7,27 @@ import Nav from "../../shared/components/Nav.jsx";
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
 
 const Cart = () => {
-    const { items, loading, error, handleGetCart, handleUpdateQuantity, handleRemoveItem } = useCart();
+    const { items, totalPrice: backendTotalPrice, loading, error, handleGetCart, handleUpdateQuantity, handleRemoveItem } = useCart();
 
     useEffect(() => {
         handleGetCart();
     }, []);
 
-    // Calculate Subtotal
+    // Calculate Subtotal (Fallback)
     const calculateSubtotal = () => {
         if (!items || items.length === 0) return 0;
         return items.reduce((total, item) => {
-            const price = item.price?.amount || 0;
-            return total + (price * item.quantity);
+            const prod = item.product;
+            if (!prod) return total;
+            const variantId = item.variant;
+            const variant = prod.variants?.find(v => v._id === variantId);
+            const currentPriceObj = variant?.price?.amount ? variant.price : prod.price;
+            const currentPrice = currentPriceObj?.amount || 0;
+            return total + (currentPrice * item.quantity);
         }, 0);
     };
 
-    const subtotal = calculateSubtotal();
+    const subtotal = backendTotalPrice !== undefined && backendTotalPrice !== 0 ? backendTotalPrice : calculateSubtotal();
     const shippingEstimate = subtotal > 999 || subtotal === 0 ? 0 : 99;
     const total = subtotal + shippingEstimate;
 
@@ -86,6 +91,12 @@ const Cart = () => {
                                     variantDesc = Object.entries(variant.attributes).map(([k,v]) => `${k}: ${v}`).join(' | ');
                                 }
 
+                                const currentPriceObj = variant?.price?.amount ? variant.price : prod.price;
+                                const currentPrice = currentPriceObj?.amount || 0;
+                                const addedPrice = item.price?.amount || 0;
+                                const priceDiff = addedPrice - currentPrice;
+                                const hasPriceChanged = addedPrice > 0 && priceDiff !== 0;
+
                                 return (
                                     <div key={index} className="flex gap-6 p-6 bg-neutral-900/60 border border-neutral-800/60 rounded-3xl">
                                         {/* Image */}
@@ -108,9 +119,28 @@ const Cart = () => {
                                                 {variantDesc && (
                                                     <p className="text-sm text-neutral-500 mb-2">{variantDesc}</p>
                                                 )}
-                                                <p className="text-xl font-bold text-yellow-500">
-                                                    {CURRENCY_SYMBOLS[item.price?.currency || 'INR'] || item.price?.currency}{item.price?.amount || 0}
-                                                </p>
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <p className="text-xl font-bold text-yellow-500">
+                                                            {CURRENCY_SYMBOLS[currentPriceObj?.currency || 'INR'] || currentPriceObj?.currency}{currentPrice}
+                                                        </p>
+                                                        {hasPriceChanged && (
+                                                            <p className="text-sm text-neutral-500 line-through">
+                                                                {CURRENCY_SYMBOLS[item.price?.currency || 'INR'] || item.price?.currency}{addedPrice}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    {hasPriceChanged && priceDiff > 0 && (
+                                                        <p className="text-sm font-medium text-green-500 mt-1">
+                                                            you will get this product on {currentPrice} save {priceDiff}
+                                                        </p>
+                                                    )}
+                                                    {hasPriceChanged && priceDiff < 0 && (
+                                                        <p className="text-sm font-medium text-red-500 mt-1">
+                                                            Warning this Product will cost you {-priceDiff} More
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center justify-between mt-4">
